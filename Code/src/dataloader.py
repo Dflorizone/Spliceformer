@@ -554,7 +554,7 @@ class spliceDataset(Dataset):
         return len(self.annotation)
 
     def __getitem__(self, idx):
-        X,Y = self.annotation[idx].getData(self.seqData)
+        X, Y = self.annotation[idx].getData(self.seqData)
         return X,Y
 
 def ceil_div(x, y):
@@ -584,24 +584,24 @@ class DataLoaderWrapper:
             raise StopIteration
 
 
-# +
-#def collate_fn(data):
-#    """
-#       data: is a list of tuples with (example, label)
-#             where 'example' is a tensor of arbitrary shape
-#             and label/length are scalars
-#    """
-#    #unfold1 = nn.Unfold((SL*3,1),SL,CL_max//2)
-#    #unfold2 = nn.Unfold((SL,1),SL,0)
-#    features = []
-#    labels = []
-#   for i in range(len(data)):
-#        features.append(torch.Tensor(data[i][0]))
-#        labels.append(torch.Tensor(data[i][1]))
-#        #features.append(tmp.unfold(0,SL*3,CL_max//2))
-#        #labels.append(torch.Tensor(data[i][1]).unfold(0,SL,CL_max//2))
-#    return torch.cat(features,dim=0).float(), torch.cat(labels,dim=0).float()
-# -
+#+
+def collate_fn(data):
+    """
+        data: is a list of tuples with (example, label)
+                where 'example' is a tensor of arbitrary shape
+                and label/length are scalars
+    """
+    #unfold1 = nn.Unfold((SL*3,1),SL,CL_max//2)
+    #unfold2 = nn.Unfold((SL,1),SL,0)
+    features = []
+    labels = []
+    for i in range(len(data)):
+        features.append(torch.Tensor(data[i][0]))
+        labels.append(torch.Tensor(data[i][1]))
+        #features.append(tmp.unfold(0,SL*3,CL_max//2))
+        #labels.append(torch.Tensor(data[i][1]).unfold(0,SL,CL_max//2))
+        return torch.cat(features,dim=0).float(), torch.cat(labels,dim=0).float()
+#-
 
 class h5pyDataset(Dataset):
     def __init__(self, h5f, idxs, transform=None, target_transform=None):

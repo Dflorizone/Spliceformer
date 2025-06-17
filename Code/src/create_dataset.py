@@ -123,7 +123,7 @@ def getJunctions(gtf,transcript_id):
     return jn_start,jn_end,Y_type, Y_idx
 
 
-def createDataset(setType,data_dir):
+def createDataset(gtf,fasta,setType,data_dir):
     genes = gtf.features_of_type('gene')
 
     if setType == 'train':
@@ -154,6 +154,8 @@ def createDataset(setType,data_dir):
     if os.path.exists('{}/annotation_ensembl_v87_{}.txt'.format(data_dir,setType)):
         os.remove('{}/annotation_ensembl_v87_{}.txt'.format(data_dir,setType))
 
+    os.makedirs(os.path.join(data_dir, 'sparse_sequence_data'), exist_ok=True)
+    
     for gene in tqdm(genes): 
         chrom = 'chr' + gene[0]
         
