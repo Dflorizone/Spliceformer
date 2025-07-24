@@ -49,7 +49,7 @@ class Attention(nn.Module):
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = self.heads), qkv)
         dots = (torch.matmul(q, k.transpose(-1, -2)))* self.scale
         attn = self.attend(dots)
-        
+        self.last_attn = attn
         out = torch.matmul(attn, v)
         out = rearrange(out, 'b h n d -> b n (h d)')
         out = torch.sigmoid(self.gate(x))*out
@@ -179,7 +179,7 @@ class ResidualBlock(nn.Module):
         x = self.activate(self.bn1(x))
         x = self.convlayer1(x)
         x = self.activate(self.bn2(x))
-        x = self.convlayer2(x)
+        x = self.convlayer2(x).clone()
         x += residual
         return x
 
