@@ -322,10 +322,11 @@ class SpliceFormer(nn.Module):
 
 
 class SpliceAI_10K(nn.Module):
-    def __init__(self,CL_max, **kwargs):
+    def __init__(self,CL_max,crop=True, **kwargs):
         super().__init__()
         n_channels = 32
         self.CL_max = CL_max
+        self.crop = crop
         self.res_W = [11,11,21,41]
         res_dilation = [1,4,10,25]
         self.kernel_size = 1
@@ -344,8 +345,10 @@ class SpliceAI_10K(nn.Module):
             skip += self.skip_layers[i+1](x)
             #skip = torch.cat([skip,self.skip_layers[i+1](x)],axis=1)
         
-
-        x = skip[:,:,self.CL_max//2:-self.CL_max//2]
+        if self.crop:
+            x = skip[:,:,self.CL_max//2:-self.CL_max//2]
+        else:
+            x = skip[:,:,:]
         x = self.conv_final(x)
         m = nn.Softmax(dim=1)
         return m(x)
