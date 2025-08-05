@@ -179,7 +179,7 @@ class ResidualBlock(nn.Module):
         x = self.activate(self.bn1(x))
         x = self.convlayer1(x)
         x = self.activate(self.bn2(x))
-        x = self.convlayer2(x).clone()
+        x = self.convlayer2(x)
         x += residual
         return x
 
@@ -335,7 +335,7 @@ class SpliceAI_10K(nn.Module):
         self.skip_layers = nn.ModuleList([nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1) for i in range(5)])
         self.res_layers = nn.ModuleList([ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[i], res_dilation=res_dilation[i]) for i in range(4)])
         self.conv_final = nn.Conv1d(in_channels=n_channels, out_channels=3, kernel_size= self.kernel_size,stride=1)
-        
+        self.feature_tap = nn.Identity()
     def forward(self, features):
         x = self.conv_layer_1(features)
         skip = self.skip_layers[0](x)
@@ -349,6 +349,7 @@ class SpliceAI_10K(nn.Module):
             x = skip[:,:,self.CL_max//2:-self.CL_max//2]
         else:
             x = skip[:,:,:]
+        x = self.feature_tap(x)
         x = self.conv_final(x)
         m = nn.Softmax(dim=1)
         return m(x)
