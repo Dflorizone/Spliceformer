@@ -49,7 +49,7 @@ class Attention(nn.Module):
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = self.heads), qkv)
         dots = (torch.matmul(q, k.transpose(-1, -2)))* self.scale
         attn = self.attend(dots)
-        
+        self.last_attn = attn
         out = torch.matmul(attn, v)
         out = rearrange(out, 'b h n d -> b n (h d)')
         out = torch.sigmoid(self.gate(x))*out
@@ -207,7 +207,7 @@ class SpliceAI(nn.Module):
         self.conv_layer_1 = nn.Conv1d(in_channels=4, out_channels=self.n_channels, kernel_size= self.kernel_size,stride=1)
         self.skip_layers = nn.ModuleList([nn.Conv1d(in_channels=self.n_channels, out_channels=self.n_channels, kernel_size= self.kernel_size,stride=1) for i in range(5)])
         self.res_layers = nn.ModuleList([ResComboBlock(in_channels=self.n_channels, out_channels=self.n_channels, res_W=self.res_W[i], res_dilation=res_dilation[i],bn_momentum=bn_momentum) for i in range(4)])
-        
+        self.skip_combined = {}
         
     def forward(self, features):
         x = self.conv_layer_1(features)
@@ -215,7 +215,11 @@ class SpliceAI(nn.Module):
 
         for i,residualUnit in enumerate(self.res_layers):
             x = residualUnit(x)
-            skip += self.skip_layers[i+1](x)
+            skip_out = self.skip_layers[i+1](x)
+            combined = skip + skip_out
+            self.skip_combined[f'skip_combined_{i}'] = combined
+            combined.retain_grad()
+            skip = combined
             #skip = torch.cat([skip,self.skip_layers[i+1](x)],axis=1)
         
         x_skip = skip[:,:,:]
@@ -322,10 +326,11 @@ class SpliceFormer(nn.Module):
 
 
 class SpliceAI_10K(nn.Module):
-    def __init__(self,CL_max, **kwargs):
+    def __init__(self,CL_max,crop=True, **kwargs):
         super().__init__()
         n_channels = 32
         self.CL_max = CL_max
+        self.crop = crop
         self.res_W = [11,11,21,41]
         res_dilation = [1,4,10,25]
         self.kernel_size = 1
@@ -334,18 +339,26 @@ class SpliceAI_10K(nn.Module):
         self.skip_layers = nn.ModuleList([nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1) for i in range(5)])
         self.res_layers = nn.ModuleList([ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[i], res_dilation=res_dilation[i]) for i in range(4)])
         self.conv_final = nn.Conv1d(in_channels=n_channels, out_channels=3, kernel_size= self.kernel_size,stride=1)
-        
+        self.feature_tap = nn.Identity()
+        self.skip_combined = {}
     def forward(self, features):
         x = self.conv_layer_1(features)
         skip = self.skip_layers[0](x)
 
         for i,residualUnit in enumerate(self.res_layers):
             x = residualUnit(x)
-            skip += self.skip_layers[i+1](x)
+            skip_out = self.skip_layers[i+1](x)
+            combined = skip + skip_out
+            self.skip_combined[f'skip_combined_{i}'] = combined
+            combined.retain_grad()
+            skip = combined
             #skip = torch.cat([skip,self.skip_layers[i+1](x)],axis=1)
         
-
-        x = skip[:,:,self.CL_max//2:-self.CL_max//2]
+        if self.crop:
+            x = skip[:,:,self.CL_max//2:-self.CL_max//2]
+        else:
+            x = skip[:,:,:]
+        x = self.feature_tap(x)
         x = self.conv_final(x)
         m = nn.Softmax(dim=1)
         return m(x)
