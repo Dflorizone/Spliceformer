@@ -1,3 +1,9 @@
+'''
+This file was used to test Transformer-40k on ENSEMBL data in Compute Canada. It follows a similar structure as 
+what the authors used in the train_transformer notebooks. Note that I used a buffer system when appending the resulting dataframe
+to prevent running out of memory. Additionally, the output csv files were saved with a gzip compression to save space.
+'''
+
 import numpy as np
 import sys
 import time

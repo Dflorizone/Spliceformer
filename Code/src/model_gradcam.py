@@ -354,10 +354,7 @@ class SpliceAI_10K(nn.Module):
             skip = combined
             #skip = torch.cat([skip,self.skip_layers[i+1](x)],axis=1)
         
-        if self.crop:
-            x = skip[:,:,self.CL_max//2:-self.CL_max//2]
-        else:
-            x = skip[:,:,:]
+        x = skip[:,:,self.CL_max//2:-self.CL_max//2]
         x = self.feature_tap(x)
         x = self.conv_final(x)
         m = nn.Softmax(dim=1)

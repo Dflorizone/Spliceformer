@@ -333,8 +333,23 @@ class SpliceAI_10K(nn.Module):
         self.kernel_size = 1
         #self.res_kernel_size = 11
         self.conv_layer_1 = nn.Conv1d(in_channels=4, out_channels=n_channels, kernel_size= self.kernel_size,stride=1)
+
+        # self.skip_layers_1 = nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1)
+        # self.skip_layers_2 = nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1)
+        # self.skip_layers_3 = nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1)
+        # self.skip_layers_4 = nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1)
+        # self.skip_layers_5 = nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1)
+        # self.skip_layers = [self.skip_layers_1,self.skip_layers_2,self.skip_layers_3,self.skip_layers_4,self.skip_layers_5]
         self.skip_layers = nn.ModuleList([nn.Conv1d(in_channels=n_channels, out_channels=n_channels, kernel_size= self.kernel_size,stride=1) for i in range(5)])
+
+        # self.res_layers_1 = ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[0], res_dilation=res_dilation[0])
+        # self.res_layers_2 = ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[1], res_dilation=res_dilation[1])
+        # self.res_layers_3 = ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[2], res_dilation=res_dilation[2])
+        # self.res_layers_4 = ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[3], res_dilation=res_dilation[3])
+        # self.res_layers = [self.res_layers_1,self.res_layers_2,self.res_layers_3,self.res_layers_4]
         self.res_layers = nn.ModuleList([ResComboBlock(in_channels=n_channels, out_channels=n_channels, res_W=self.res_W[i], res_dilation=res_dilation[i]) for i in range(4)])
+
+        self.sm = nn.Softmax(dim=1)
         self.conv_final = nn.Conv1d(in_channels=n_channels, out_channels=3, kernel_size= self.kernel_size,stride=1)
         
     def forward(self, features):
@@ -351,8 +366,9 @@ class SpliceAI_10K(nn.Module):
         else:
             x = skip[:,:,:]
         x = self.conv_final(x)
-        m = nn.Softmax(dim=1)
-        return m(x)
+        # m = nn.Softmax(dim=1)
+        # x = self.sm(x)
+        return x
 
 class SpliceAI_small(nn.Module):
     def __init__(self,CL_max, **kwargs):

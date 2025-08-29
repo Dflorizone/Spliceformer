@@ -37,7 +37,7 @@ import os
 
 
 data_dir = os.path.join(os.environ['SLURM_TMPDIR'], 'Data')
-out_path = os.path.join(os.environ['SLURM_TMPDIR'], 'Data', 'spliceai_10k_test_ensembl_predictions_300625.csv.gz')
+out_path = os.path.join(os.environ['SLURM_TMPDIR'], 'Data', 'spliceai_10k_test_ensembl_predictions_270825.csv.gz')
 # if not os.path.exists(out_path):
 #     with open(out_path, 'wt') as f:
 #         f.write("Y_true_acceptor,Y_pred_acceptor,Y_true_donor,Y_pred_donor\n")
@@ -68,7 +68,7 @@ output_class_labels = ['Null', 'Acceptor', 'Donor']
 
 #for output_class in [1,2]:
 models = [copy.deepcopy(model_m) for i in range(n_models)]
-[model.load_state_dict(torch.load('../Results/PyTorch_Models/spliceai_encoder_10k_071122_{}'.format(i))) for i,model in enumerate(models)]
+[model.load_state_dict(torch.load('../Results/PyTorch_Models/spliceai_encoder_10k_191022_{}'.format(i))) for i,model in enumerate(models)]
 #nr = [0,2,3]
 #[model.load_state_dict(torch.load('../Results/PyTorch_Models/transformer_encoder_40k_201221_{}'.format(nr[i]))) for i,model in enumerate(models)]
 #chunkSize = num_idx/10
