@@ -1,3 +1,4 @@
+# This notebook was used to test SpliceAI model on ENSEMBL data
 import numpy as np
 import sys
 import time

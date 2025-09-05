@@ -1,3 +1,4 @@
+# Script used to test Transformer-40k on GENCODE data
 import numpy as np
 import h5py
 from tqdm import tqdm
